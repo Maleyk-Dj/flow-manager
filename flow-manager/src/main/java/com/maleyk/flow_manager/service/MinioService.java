@@ -25,4 +25,17 @@ public class MinioService {
                         .build()
         );
     }
+
+    public byte[] download(String bucket, String path) throws Exception {
+        byte[] fileBytes;
+        try (InputStream inputStream = minioClient.getObject(
+                GetObjectArgs.builder()
+                        .bucket(bucket)
+                        .object(path)
+                        .build()
+        )) {
+            fileBytes = inputStream.readAllBytes();
+        }
+        return fileBytes;
+    }
 }

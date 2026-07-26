@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.maleyk.flow_manager.dto.ConversionStatus;
 import com.maleyk.flow_manager.dto.FileConversionRequest;
 import com.maleyk.flow_manager.dto.FileConversionResult;
+import com.maleyk.flow_manager.exception.FileRecordNotFoundException;
 import com.maleyk.flow_manager.model.FileRecord;
 import com.maleyk.flow_manager.model.Status;
 import com.maleyk.flow_manager.outbox.OutboxService;
@@ -64,5 +65,10 @@ public class FileRecordService {
             record.setUpdatedAt(LocalDateTime.now());
             fileRecordRepository.save(record);
         }, () -> log.warn("Не найдена запись FileRecord для messageId {}", result.getOriginalMessageId()));
+    }
+
+    public FileRecord findByIdOrThrows(UUID id) {
+        return fileRecordRepository.findById(id)
+                .orElseThrow(() -> new FileRecordNotFoundException(id));
     }
 }
