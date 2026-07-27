@@ -1,6 +1,5 @@
 package com.maleyk.flow_manager.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.maleyk.flow_manager.dto.ConversionStatus;
 import com.maleyk.flow_manager.dto.FileConversionRequest;
 import com.maleyk.flow_manager.dto.FileConversionResult;
@@ -33,22 +32,22 @@ public class FileRecordService {
 
     @Transactional
     public FileRecord createProcessingRecord(
-            String originalName, String bucket, String objectKey) throws JsonProcessingException {
-        FileRecord record = new FileRecord();
-        record.setOriginalFilename(originalName);
-        record.setSourcePath(objectKey);
-        record.setStatus(Status.PROCESSING);
-        record.setCreatedAt(LocalDateTime.now());
-        record.setUpdatedAt(LocalDateTime.now());
-        fileRecordRepository.save(record);
+            String originalName, String bucket, String objectKey)  {
+        FileRecord fileRecord = new FileRecord();
+        fileRecord.setOriginalFilename(originalName);
+        fileRecord.setSourcePath(objectKey);
+        fileRecord.setStatus(Status.PROCESSING);
+        fileRecord.setCreatedAt(LocalDateTime.now());
+        fileRecord.setUpdatedAt(LocalDateTime.now());
+        fileRecordRepository.save(fileRecord);
 
         FileConversionRequest request = new FileConversionRequest();
-        request.setMessageId(record.getId().toString());
+        request.setMessageId(fileRecord.getId().toString());
         request.setBucket(bucket);
         request.setFilePath(objectKey);
 
         outboxService.save(topic, objectMapper.writeValueAsString(request));
-        return record;
+        return fileRecord;
     }
 
     @Transactional

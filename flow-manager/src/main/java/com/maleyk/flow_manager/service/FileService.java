@@ -31,20 +31,20 @@ public class FileService {
     }
 
     public FileStatusResponse getStatus(UUID id) {
-        FileRecord record = recordService.findByIdOrThrows(id);
-        return new FileStatusResponse(record.getId(), record.getStatus(),
-                record.getConvertedPath());
+        FileRecord fileRecord = recordService.findByIdOrThrows(id);
+        return new FileStatusResponse(fileRecord.getId(), fileRecord.getStatus(),
+                fileRecord.getConvertedPath());
     }
 
     public FileDownload downloadConvertedFile(UUID id) throws Exception {
-        FileRecord record = recordService.findByIdOrThrows(id);
+        FileRecord fileRecord = recordService.findByIdOrThrows(id);
 
-        if (record.getStatus() != Status.SUCCESS) {
+        if (fileRecord.getStatus() != Status.SUCCESS) {
             throw new FileNotReadyException("Файл еще не готов: " + id);
         }
 
-        byte[] content = minioService.download(CONVERTED_BUCKET, record.getConvertedPath());
-        return new FileDownload(content, record.getConvertedPath());
+        byte[] content = minioService.download(CONVERTED_BUCKET, fileRecord.getConvertedPath());
+        return new FileDownload(content, fileRecord.getConvertedPath());
 
     }
 }
