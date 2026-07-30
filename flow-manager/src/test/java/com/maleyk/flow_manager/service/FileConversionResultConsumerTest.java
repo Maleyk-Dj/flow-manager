@@ -10,8 +10,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.support.Acknowledgment;
 import tools.jackson.databind.ObjectMapper;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,18 +26,24 @@ class FileConversionResultConsumerTest {
     private FileRecordService service;
     @Mock
     private Acknowledgment ack;
+    @Mock
+    private DeadLetterPublishingRecoverer dltRecoverer;
     @Spy
     private ObjectMapper objectMapper = new ObjectMapper();
     @InjectMocks
     private FileConversionResultConsumer consumer;
 
+    private ConsumerRecord<String, String> record(String value) {
+        return new ConsumerRecord<>("files.output", 0, 0L, "key", value);
+    }
+
     @Test
     void consume_shouldProcessAndAck_whenMessageValid() {
         String message = """
-                {"originalMessageId":"123","status":"SUCCESS","bucket":"converted-files","pdfPath":"path/to/file.pdf"}
+                {"originalMessageId":"123","recordStatus":"SUCCESS","bucket":"converted-files","pdfPath":"path/to/file.pdf"}
                 """;
 
-        consumer.consume(message, ack);
+        consumer.consume(record(message), ack);
 
         verify(service).applyConversionResult(any(FileConversionResult.class));
         verify(ack).acknowledge();
@@ -46,23 +54,24 @@ class FileConversionResultConsumerTest {
             "not a json",
             "{invalid}",
             "",
-            "{\"status\":}"
+            "{\"recordStatus\":}"
     })
     void consume_shouldAckAndSkip_whenMessageMalformed(String badMessage) {
-        consumer.consume(badMessage, ack);
+        consumer.consume(record(badMessage), ack);
 
         verify(service, never()).applyConversionResult(any());
+        verify(dltRecoverer).accept(any(ConsumerRecord.class), any());
         verify(ack).acknowledge();
     }
 
     @Test
     void consume_shouldNotAck_whenProcessingFails() {
         String message = """
-                {"originalMessageId":"123","status":"SUCCESS","bucket":"converted-files","pdfPath":"path/to/file.pdf"}
+                {"originalMessageId":"123","recordStatus":"SUCCESS","bucket":"converted-files","pdfPath":"path/to/file.pdf"}
                 """;
         doThrow(new RuntimeException("db down")).when(service).applyConversionResult(any());
 
-        assertThrows(RuntimeException.class, () -> consumer.consume(message, ack));
+        assertThrows(RuntimeException.class, () -> consumer.consume(record(message), ack));
 
         verify(ack, never()).acknowledge();
     }

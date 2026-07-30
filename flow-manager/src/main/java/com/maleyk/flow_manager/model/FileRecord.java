@@ -24,7 +24,7 @@ public class FileRecord {
     private String convertedPath;
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private RecordStatus recordStatus;
 
     private LocalDateTime createdAt;
 

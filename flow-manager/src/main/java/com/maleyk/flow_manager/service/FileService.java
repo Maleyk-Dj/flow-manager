@@ -4,7 +4,7 @@ import com.maleyk.flow_manager.dto.FileDownload;
 import com.maleyk.flow_manager.dto.FileStatusResponse;
 import com.maleyk.flow_manager.exception.FileNotReadyException;
 import com.maleyk.flow_manager.model.FileRecord;
-import com.maleyk.flow_manager.model.Status;
+import com.maleyk.flow_manager.model.RecordStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,14 +32,14 @@ public class FileService {
 
     public FileStatusResponse getStatus(UUID id) {
         FileRecord fileRecord = recordService.findByIdOrThrows(id);
-        return new FileStatusResponse(fileRecord.getId(), fileRecord.getStatus(),
+        return new FileStatusResponse(fileRecord.getId(), fileRecord.getRecordStatus(),
                 fileRecord.getConvertedPath());
     }
 
     public FileDownload downloadConvertedFile(UUID id) throws Exception {
         FileRecord fileRecord = recordService.findByIdOrThrows(id);
 
-        if (fileRecord.getStatus() != Status.SUCCESS) {
+        if (fileRecord.getRecordStatus() != RecordStatus.SUCCESS) {
             throw new FileNotReadyException("Файл еще не готов: " + id);
         }
 

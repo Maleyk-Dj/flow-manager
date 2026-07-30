@@ -3,7 +3,7 @@ package com.maleyk.flow_manager.service;
 import com.maleyk.flow_manager.dto.FileConversionResult;
 import com.maleyk.flow_manager.exception.FileRecordNotFoundException;
 import com.maleyk.flow_manager.model.FileRecord;
-import com.maleyk.flow_manager.model.Status;
+import com.maleyk.flow_manager.model.RecordStatus;
 import com.maleyk.flow_manager.outbox.OutboxService;
 import com.maleyk.flow_manager.repository.FileRecordRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,7 +46,7 @@ class FileRecordServiceTest {
         id = UUID.randomUUID();
         existingRecord = new FileRecord();
         existingRecord.setId(id);
-        existingRecord.setStatus(Status.PROCESSING);
+        existingRecord.setRecordStatus(RecordStatus.PROCESSING);
     }
 
     @Test
@@ -63,7 +63,7 @@ class FileRecordServiceTest {
 
         assertEquals("report.docx", result.getOriginalFilename());
         assertEquals("abc-report.docx", result.getSourcePath());
-        assertEquals(Status.PROCESSING, result.getStatus());
+        assertEquals(RecordStatus.PROCESSING, result.getRecordStatus());
         assertNotNull(result.getId());
 
         ArgumentCaptor<String> payloadCaptor = ArgumentCaptor.forClass(String.class);
@@ -83,7 +83,7 @@ class FileRecordServiceTest {
 
         service.applyConversionResult(result);
 
-        assertEquals(Status.SUCCESS, existingRecord.getStatus());
+        assertEquals(RecordStatus.SUCCESS, existingRecord.getRecordStatus());
         assertEquals("path/to/file.pdf", existingRecord.getConvertedPath());
         verify(repository).save(existingRecord);
     }
@@ -95,7 +95,7 @@ class FileRecordServiceTest {
 
         service.applyConversionResult(result);
 
-        assertEquals(Status.ERROR, existingRecord.getStatus());
+        assertEquals(RecordStatus.ERROR, existingRecord.getRecordStatus());
         assertNull(existingRecord.getConvertedPath());
         verify(repository).save(existingRecord);
     }

@@ -5,7 +5,7 @@ import com.maleyk.flow_manager.dto.FileStatusResponse;
 import com.maleyk.flow_manager.exception.FileNotReadyException;
 import com.maleyk.flow_manager.exception.FileRecordNotFoundException;
 import com.maleyk.flow_manager.model.FileRecord;
-import com.maleyk.flow_manager.model.Status;
+import com.maleyk.flow_manager.model.RecordStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -32,10 +32,10 @@ import static org.mockito.Mockito.*;
     @InjectMocks
     private FileService fileService;
 
-    private FileRecord buildRecord(UUID id, Status status, String convertedPath) {
+    private FileRecord buildRecord(UUID id, RecordStatus recordStatus, String convertedPath) {
         FileRecord record = new FileRecord();
         record.setId(id);
-        record.setStatus(status);
+        record.setRecordStatus(recordStatus);
         record.setConvertedPath(convertedPath);
         return record;
     }
@@ -67,14 +67,14 @@ import static org.mockito.Mockito.*;
     @Test
     void getStatus_shouldReturnStatusResponse() {
         UUID id = UUID.randomUUID();
-        FileRecord record = buildRecord(id, Status.SUCCESS, "path/to/file.pdf");
+        FileRecord record = buildRecord(id, RecordStatus.SUCCESS, "path/to/file.pdf");
 
         when(recordService.findByIdOrThrows(id)).thenReturn(record);
 
         FileStatusResponse response = fileService.getStatus(id);
 
         assertEquals(id, response.id());
-        assertEquals(Status.SUCCESS, response.status());
+        assertEquals(RecordStatus.SUCCESS, response.recordStatus());
         assertEquals("path/to/file.pdf", response.convertedPath());
     }
 
@@ -89,7 +89,7 @@ import static org.mockito.Mockito.*;
     @Test
     void downloadConvertedFile_shouldReturnContent_whenStatusSuccess() throws Exception {
         UUID id = UUID.randomUUID();
-        FileRecord record = buildRecord(id, Status.SUCCESS, "path/to/file.pdf");
+        FileRecord record = buildRecord(id, RecordStatus.SUCCESS, "path/to/file.pdf");
 
         when(recordService.findByIdOrThrows(id)).thenReturn(record);
         when(minioService.download("converted-files", "path/to/file.pdf")).thenReturn("pdf-bytes".getBytes());
@@ -103,7 +103,7 @@ import static org.mockito.Mockito.*;
     @Test
     void downloadConvertedFile_shouldThrow_whenNotReady() {
         UUID id = UUID.randomUUID();
-        FileRecord record = record = buildRecord(id, Status.PROCESSING, null);
+        FileRecord record = record = buildRecord(id, RecordStatus.PROCESSING, null);
 
         when(recordService.findByIdOrThrows(id)).thenReturn(record);
 

@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class
-FileConversionResult {
+public class FileConversionResult {
     String originalMessageId;
     ConversionStatus status;
     String bucket;

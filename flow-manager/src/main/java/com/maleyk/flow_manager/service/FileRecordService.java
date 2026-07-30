@@ -5,7 +5,7 @@ import com.maleyk.flow_manager.dto.FileConversionRequest;
 import com.maleyk.flow_manager.dto.FileConversionResult;
 import com.maleyk.flow_manager.exception.FileRecordNotFoundException;
 import com.maleyk.flow_manager.model.FileRecord;
-import com.maleyk.flow_manager.model.Status;
+import com.maleyk.flow_manager.model.RecordStatus;
 import com.maleyk.flow_manager.outbox.OutboxService;
 import com.maleyk.flow_manager.repository.FileRecordRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +36,7 @@ public class FileRecordService {
         FileRecord fileRecord = new FileRecord();
         fileRecord.setOriginalFilename(originalName);
         fileRecord.setSourcePath(objectKey);
-        fileRecord.setStatus(Status.PROCESSING);
+        fileRecord.setRecordStatus(RecordStatus.PROCESSING);
         fileRecord.setCreatedAt(LocalDateTime.now());
         fileRecord.setUpdatedAt(LocalDateTime.now());
         fileRecordRepository.save(fileRecord);
@@ -56,10 +56,10 @@ public class FileRecordService {
 
         fileRecordRepository.findById(recordId).ifPresentOrElse(record -> {
             if (result.getStatus() == ConversionStatus.SUCCESS) {
-                record.setStatus(Status.SUCCESS);
+                record.setRecordStatus(RecordStatus.SUCCESS);
                 record.setConvertedPath(result.getPdfPath());
             } else {
-                record.setStatus(Status.ERROR);
+                record.setRecordStatus(RecordStatus.ERROR);
             }
             record.setUpdatedAt(LocalDateTime.now());
             fileRecordRepository.save(record);
