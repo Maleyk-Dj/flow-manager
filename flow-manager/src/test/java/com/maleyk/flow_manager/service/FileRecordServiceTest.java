@@ -59,10 +59,11 @@ class FileRecordServiceTest {
         });
 
         FileRecord result = service.createProcessingRecord
-                ("report.docx", "source-files", "abc-report.docx");
+                ("report.docx", "source-files", "abc-report.docx", "malika");
 
         assertEquals("report.docx", result.getOriginalFilename());
         assertEquals("abc-report.docx", result.getSourcePath());
+        assertEquals("malika", result.getOwnerLogin());
         assertEquals(RecordStatus.PROCESSING, result.getRecordStatus());
         assertNotNull(result.getId());
 

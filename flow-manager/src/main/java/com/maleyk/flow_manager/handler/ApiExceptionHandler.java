@@ -1,5 +1,6 @@
 package com.maleyk.flow_manager.handler;
 
+import com.maleyk.flow_manager.exception.FileAccessDeniedException;
 import com.maleyk.flow_manager.exception.FileNotReadyException;
 import com.maleyk.flow_manager.exception.FileRecordNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -18,5 +19,10 @@ public class ApiExceptionHandler {
     @ExceptionHandler(FileNotReadyException.class)
     public ResponseEntity<String> handleNotReady(FileNotReadyException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+    }
+
+    @ExceptionHandler(FileAccessDeniedException.class)
+    public ResponseEntity<String> handleDeniedAccess(FileAccessDeniedException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
     }
 }

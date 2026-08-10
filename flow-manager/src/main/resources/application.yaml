@@ -25,10 +25,16 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
 kafka:
   topics:
     input: files.input
     output: files.output
+    subscription-expired: subscription-expired
 
 minio:
   endpoint: ${MINIO_ENDPOINT:http://localhost:9000}

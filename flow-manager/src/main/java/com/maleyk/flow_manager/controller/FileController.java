@@ -2,9 +2,13 @@ package com.maleyk.flow_manager.controller;
 
 import com.maleyk.flow_manager.dto.FileDownload;
 import com.maleyk.flow_manager.dto.FileStatusResponse;
+import com.maleyk.flow_manager.dto.SubscriptionResponse;
+import com.maleyk.flow_manager.feign.SubscriptionClient;
 import com.maleyk.flow_manager.model.FileRecord;
 import com.maleyk.flow_manager.service.FileService;
+import com.maleyk.flow_manager.service.SubscriptionCacheService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,21 +24,26 @@ import java.util.UUID;
 public class FileController {
 
     private final FileService service;
+    private final SubscriptionCacheService cacheService;
 
     @PostMapping
-    public ResponseEntity<FileRecord> upload(@RequestParam("file") MultipartFile file) throws Exception {
-        FileRecord record = service.upload(file);
+    public ResponseEntity<FileRecord> upload(@RequestParam("file") MultipartFile file,
+                                             @RequestHeader("X-User-Login") String userLogin) throws Exception {
+        FileRecord record = service.upload(file, userLogin);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(record);
     }
 
     @GetMapping("/{id}/status")
-    public FileStatusResponse getStatus(@PathVariable UUID id) {
-        return service.getStatus(id);
+    public FileStatusResponse getStatus(@PathVariable UUID id,
+                                        @RequestHeader(value = "X-User-Login", required = false)
+                                        String userLogin) {
+        return service.getStatus(id, userLogin);
     }
 
     @GetMapping("/{id}/file")
-    public ResponseEntity<byte[]> downloadFile(@PathVariable UUID id) throws Exception {
-        FileDownload download = service.downloadConvertedFile(id);
+    public ResponseEntity<byte[]> downloadFile(@PathVariable UUID id,
+                                               @RequestHeader(value = "X-User-Login", required = false) String userLogin) throws Exception {
+        FileDownload download = service.downloadConvertedFile(id, userLogin);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=\"" + download.fileName() + "\"")

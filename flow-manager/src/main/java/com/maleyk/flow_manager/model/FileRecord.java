@@ -23,6 +23,8 @@ public class FileRecord {
 
     private String convertedPath;
 
+    private String ownerLogin;
+
     @Enumerated(EnumType.STRING)
     private RecordStatus recordStatus;
 
