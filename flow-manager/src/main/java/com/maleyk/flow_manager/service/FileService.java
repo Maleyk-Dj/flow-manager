@@ -2,8 +2,11 @@ package com.maleyk.flow_manager.service;
 
 import com.maleyk.flow_manager.dto.FileDownload;
 import com.maleyk.flow_manager.dto.FileStatusResponse;
+import com.maleyk.flow_manager.dto.SubscriptionResponse;
+import com.maleyk.flow_manager.dto.SubscriptionType;
 import com.maleyk.flow_manager.exception.FileAccessDeniedException;
 import com.maleyk.flow_manager.exception.FileNotReadyException;
+import com.maleyk.flow_manager.exception.FileSizeLimitExceededException;
 import com.maleyk.flow_manager.model.FileRecord;
 import com.maleyk.flow_manager.model.RecordStatus;
 import lombok.RequiredArgsConstructor;
@@ -18,11 +21,17 @@ public class FileService {
 
     private final MinioService minioService;
     private final FileRecordService recordService;
+    private final SubscriptionCacheService subscriptionCacheService;
 
     private static final String SOURCE_BUCKET = "source-files";
     private static final String CONVERTED_BUCKET = "converted-files";
+    private static final long FREE_TIER_FILE_SIZE_LIMIT = 100L * 1024 * 1024;
 
     public FileRecord upload(MultipartFile file, String userLogin) throws Exception {
+        SubscriptionResponse subscription = subscriptionCacheService.getSubscriptionCached(userLogin);
+        if (subscription.subscriptionType() == SubscriptionType.FREE && file.getSize() > FREE_TIER_FILE_SIZE_LIMIT) {
+            throw new FileSizeLimitExceededException("Файл превышает лимит 100MB для бесплатной подписки");
+        }
         String objectKey = UUID.randomUUID() + "-" + file.getOriginalFilename();
 
         minioService.upload(SOURCE_BUCKET, objectKey,

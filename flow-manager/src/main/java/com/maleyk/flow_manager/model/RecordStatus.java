@@ -4,5 +4,4 @@ public enum RecordStatus {
     PROCESSING,
     SUCCESS,
     ERROR
-
 }
