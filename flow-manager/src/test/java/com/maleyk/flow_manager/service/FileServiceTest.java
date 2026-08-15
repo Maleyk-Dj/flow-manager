@@ -39,7 +39,6 @@ import static org.mockito.Mockito.*;
         record.setConvertedPath(convertedPath);
         return record;
     }
-
     @Test
     void upload_shouldStoreFileAndCreateRecord() throws Exception {
         MockMultipartFile file = new MockMultipartFile(
@@ -49,16 +48,16 @@ import static org.mockito.Mockito.*;
         expectedRecord.setOriginalFilename("report.docx");
 
         when(recordService.createProcessingRecord(eq("report.docx"), eq("source-files"),
-                anyString()))
+                anyString(), eq("malika")))
                 .thenReturn(expectedRecord);
 
-        FileRecord result = fileService.upload(file);
+        FileRecord result = fileService.upload(file, "malika");
 
         ArgumentCaptor<String> objectKeyCaptor = ArgumentCaptor.forClass(String.class);
         verify(minioService).upload(eq("source-files"), objectKeyCaptor.capture(),
                 any(InputStream.class), eq((long) file.getSize()), eq("application/octet-stream"));
         verify(recordService).createProcessingRecord(
-                eq("report.docx"), eq("source-files"), eq(objectKeyCaptor.getValue()));
+                eq("report.docx"), eq("source-files"), eq(objectKeyCaptor.getValue()), eq("malika"));
 
         assertEquals(expectedRecord, result);
     }
@@ -68,10 +67,11 @@ import static org.mockito.Mockito.*;
     void getStatus_shouldReturnStatusResponse() {
         UUID id = UUID.randomUUID();
         FileRecord record = buildRecord(id, RecordStatus.SUCCESS, "path/to/file.pdf");
+        record.setOwnerLogin("malika");
 
         when(recordService.findByIdOrThrows(id)).thenReturn(record);
 
-        FileStatusResponse response = fileService.getStatus(id);
+        FileStatusResponse response = fileService.getStatus(id, "malika");
 
         assertEquals(id, response.id());
         assertEquals(RecordStatus.SUCCESS, response.recordStatus());
@@ -83,18 +83,19 @@ import static org.mockito.Mockito.*;
         UUID id = UUID.randomUUID();
         when(recordService.findByIdOrThrows(id)).thenThrow(new FileRecordNotFoundException(id));
 
-        assertThrows(FileRecordNotFoundException.class, () -> fileService.getStatus(id));
+        assertThrows(FileRecordNotFoundException.class, () -> fileService.getStatus(id, "malika"));
     }
 
     @Test
     void downloadConvertedFile_shouldReturnContent_whenStatusSuccess() throws Exception {
         UUID id = UUID.randomUUID();
         FileRecord record = buildRecord(id, RecordStatus.SUCCESS, "path/to/file.pdf");
+        record.setOwnerLogin("malika");
 
         when(recordService.findByIdOrThrows(id)).thenReturn(record);
         when(minioService.download("converted-files", "path/to/file.pdf")).thenReturn("pdf-bytes".getBytes());
 
-        FileDownload download = fileService.downloadConvertedFile(id);
+        FileDownload download = fileService.downloadConvertedFile(id, "malika");
 
         assertArrayEquals("pdf-bytes".getBytes(), download.content());
         assertEquals("path/to/file.pdf", download.fileName());
@@ -103,11 +104,12 @@ import static org.mockito.Mockito.*;
     @Test
     void downloadConvertedFile_shouldThrow_whenNotReady() {
         UUID id = UUID.randomUUID();
-        FileRecord record = record = buildRecord(id, RecordStatus.PROCESSING, null);
+        FileRecord record = buildRecord(id, RecordStatus.PROCESSING, null);
+        record.setOwnerLogin("malika");
 
         when(recordService.findByIdOrThrows(id)).thenReturn(record);
 
-        assertThrows(FileNotReadyException.class, () -> fileService.downloadConvertedFile(id));
+        assertThrows(FileNotReadyException.class, () -> fileService.downloadConvertedFile(id, "malika"));
         verifyNoInteractions(minioService);
     }
 }

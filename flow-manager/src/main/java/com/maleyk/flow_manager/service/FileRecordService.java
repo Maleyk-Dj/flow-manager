@@ -32,13 +32,14 @@ public class FileRecordService {
 
     @Transactional
     public FileRecord createProcessingRecord(
-            String originalName, String bucket, String objectKey)  {
+            String originalName, String bucket, String objectKey, String ownerLogin) {
         FileRecord fileRecord = new FileRecord();
         fileRecord.setOriginalFilename(originalName);
         fileRecord.setSourcePath(objectKey);
         fileRecord.setRecordStatus(RecordStatus.PROCESSING);
         fileRecord.setCreatedAt(LocalDateTime.now());
         fileRecord.setUpdatedAt(LocalDateTime.now());
+        fileRecord.setOwnerLogin(ownerLogin);
         fileRecordRepository.save(fileRecord);
 
         FileConversionRequest request = new FileConversionRequest();

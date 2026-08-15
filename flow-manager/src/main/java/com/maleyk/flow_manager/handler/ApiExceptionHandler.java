@@ -1,7 +1,9 @@
 package com.maleyk.flow_manager.handler;
 
+import com.maleyk.flow_manager.exception.FileAccessDeniedException;
 import com.maleyk.flow_manager.exception.FileNotReadyException;
 import com.maleyk.flow_manager.exception.FileRecordNotFoundException;
+import com.maleyk.flow_manager.exception.FileSizeLimitExceededException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,5 +20,15 @@ public class ApiExceptionHandler {
     @ExceptionHandler(FileNotReadyException.class)
     public ResponseEntity<String> handleNotReady(FileNotReadyException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+    }
+
+    @ExceptionHandler(FileAccessDeniedException.class)
+    public ResponseEntity<String> handleDeniedAccess(FileAccessDeniedException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+    }
+
+    @ExceptionHandler(FileSizeLimitExceededException.class)
+    public ResponseEntity<String> handleFileSizeLimitExceeded(FileSizeLimitExceededException e) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(e.getMessage());
     }
 }

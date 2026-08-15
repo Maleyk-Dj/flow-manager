@@ -41,6 +41,12 @@ services:
     volumes:
       - minio-data:/data
 
+  redis:
+    image: redis:7
+    container_name: flow-manager-redis
+    ports:
+      - "6379:6379"
+
 volumes:
   flowmanager_pgdata:
   minio-data:

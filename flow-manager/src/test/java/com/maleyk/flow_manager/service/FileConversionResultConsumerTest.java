@@ -40,7 +40,8 @@ class FileConversionResultConsumerTest {
     @Test
     void consume_shouldProcessAndAck_whenMessageValid() {
         String message = """
-                {"originalMessageId":"123","recordStatus":"SUCCESS","bucket":"converted-files","pdfPath":"path/to/file.pdf"}
+                {"originalMessageId":"123","recordStatus":"SUCCESS","bucket":"converted-files",
+                "pdfPath":"path/to/file.pdf"}
                 """;
 
         consumer.consume(record(message), ack);
@@ -67,7 +68,8 @@ class FileConversionResultConsumerTest {
     @Test
     void consume_shouldNotAck_whenProcessingFails() {
         String message = """
-                {"originalMessageId":"123","recordStatus":"SUCCESS","bucket":"converted-files","pdfPath":"path/to/file.pdf"}
+                {"originalMessageId":"123","recordStatus":"SUCCESS","bucket":"converted-files",
+                "pdfPath":"path/to/file.pdf"}
                 """;
         doThrow(new RuntimeException("db down")).when(service).applyConversionResult(any());
 
